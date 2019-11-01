@@ -6,7 +6,10 @@ Install [Bitwarden's](https://bitwarden.com/) entire infrastructure on Linux.
 Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+* Ports 80 (http) and 443 (https) should be open.
+* When you want to access Bitwarden from the outside world, their must be pointing a DNS record to your machine.
+* Docker and Docker Compose must be installed (*Will later be included in the role*)
+* Bitwarden Installation ID and Installation key are required (can be obtained from [bitwarden.com/host](https://bitwarden.com/host))
 
 Role Variables
 --------------
