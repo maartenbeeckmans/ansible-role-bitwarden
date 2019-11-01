@@ -1,2 +1,7 @@
 ---
 # tasks file for ansible-role-bitwarden
+- name: Download bitwarden installation script
+  get_url:
+    url: https://go.btwrdn.co/bw-sh
+    dst: /tmp/bitwarden.sh
+    mode: 0777
