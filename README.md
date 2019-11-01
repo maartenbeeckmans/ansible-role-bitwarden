@@ -1,7 +1,7 @@
 Bitwarden
 =========
 
-Installs self hosted instance of bitwarden pasword manager
+Install [Bitwarden's](https://bitwarden.com/) entire infrastructure on Linux.
 
 Requirements
 ------------
