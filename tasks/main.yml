@@ -1,5 +1,11 @@
 ---
 # tasks file for ansible-role-bitwarden
+- name: install the latest version of docker and docker-compose
+  package:
+    name:
+      - docker
+      - docker-compose
+    state: latest
 - name: Download bitwarden installation script
   get_url:
     url: https://go.btwrdn.co/bw-sh
