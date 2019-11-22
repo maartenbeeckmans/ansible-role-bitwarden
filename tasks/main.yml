@@ -1,16 +1,78 @@
 ---
 # tasks file for ansible-role-bitwarden
-- name: install the latest version of docker and docker-compose
+- name: install the latest version of docker, docker-compose and unzip
   package:
     name:
       - docker
       - docker-compose
+      - unzip
     state: latest
-# - name: Download bitwarden installation script
-#   get_url:
-#     url: https://go.btwrdn.co/bw-sh
-#     dst: /tmp/bitwarden.sh
-#     mode: 0777
-# - name: Install bitwarden
-#   script: /tmp/bitwarden.sh install
-# kijken hoe ansible variabelen doorgeven als parameters
+- name: Start docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+# Step 1
+- name: Download docker compose file
+  get_url:
+    url: https://github.com/bitwarden/server/releases/download/v1.32.0/docker-stub.zip
+    dest: /tmp/docker-stub.zip
+    mode: 0777
+
+# Step 2
+- name: Create bwdata folder
+  file: path=/tmp/bwdata state=directory
+- name: Extract docker-stub.zip into bwdata/docker-stub/
+  unarchive:
+    src: /tmp/docker-stub.zip
+    dest: /tmp/bwdata
+
+# Step 3
+- name: Enter installation id in ./bwdata/env/global.override.env
+  lineinfile:
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__installation__id'
+    line: globalSettings__installation__id={{ bitwarden_installation_id }}
+- name: Enter installation key in ./bwdata/env/global.override.env
+  lineinfile:
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__installation__key'
+    line: globalSettings__installation__key={{ bitwarden_installation_key }}
+
+# Step 4
+- name: Replace vault service url in ./bwdata/env/global.override.env
+  lineinfile: 
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__baseServiceUri__vault='
+    line: globalSettings__baseServiceUri__vault=https://{{ bitwarden_hostname }}/
+
+- name: Replace api service url in ./bwdata/env/global.override.env
+  lineinfile: 
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__baseServiceUri__api='
+    line: globalSettings__baseServiceUri__api=https://{{ bitwarden_hostname }}/api
+
+- name: Replace identity service url in ./bwdata/env/global.override.env
+  lineinfile: 
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__baseServiceUri__identity='
+    line: globalSettings__baseServiceUri__identity=https://{{ bitwarden_hostname }}/identity
+
+- name: Replace admin service url in ./bwdata/env/global.override.env
+  lineinfile: 
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__baseServiceUri__admin='
+    line: globalSettings__baseServiceUri__admin=https://{{ bitwarden_hostname }}/admin
+
+- name: Replace notifications service url in ./bwdata/env/global.override.env
+  lineinfile: 
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__baseServiceUri__notifications='
+    line: globalSettings__baseServiceUri__notifications=https://{{ bitwarden_hostname }}/notifications
+
+- name: Replace attachment base url in ./bwdata/env/global.override.env
+  lineinfile: 
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__attachment__baseUrl='
+    line: globalSettings__attachment__baseUrl=https://{{ bitwarden_hostname }}/attachments
