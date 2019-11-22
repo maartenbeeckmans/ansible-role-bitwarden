@@ -6,11 +6,11 @@
       - docker
       - docker-compose
     state: latest
-- name: Download bitwarden installation script
-  get_url:
-    url: https://go.btwrdn.co/bw-sh
-    dst: /tmp/bitwarden.sh
-    mode: 0777
-- name: Install bitwarden
-  script: /tmp/bitwarden.sh install
+# - name: Download bitwarden installation script
+#   get_url:
+#     url: https://go.btwrdn.co/bw-sh
+#     dst: /tmp/bitwarden.sh
+#     mode: 0777
+# - name: Install bitwarden
+#   script: /tmp/bitwarden.sh install
 # kijken hoe ansible variabelen doorgeven als parameters
