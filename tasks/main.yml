@@ -76,3 +76,24 @@
     path: /tmp/bwdata/env/global.override.env
     regexp: 'globalSettings__attachment__baseUrl='
     line: globalSettings__attachment__baseUrl=https://{{ bitwarden_hostname }}/attachments
+
+# Step 5
+# https://docs.ansible.com/ansible/latest/modules/win_certificate_store_module.html
+
+# Step 6
+# https://docs.ansible.com/ansible/latest/modules/openssl_certificate_module.html
+
+# Step 7
+
+# Step 8
+# https://docs.ansible.com/ansible/latest/plugins/lookup/password.html
+
+# Step 9
+
+# Step 10
+
+# Step 11
+# https://docs.ansible.com/ansible/latest/modules/user_module.html
+
+# Step 12
+# https://docs.ansible.com/ansible/latest/modules/docker_compose_module.html
