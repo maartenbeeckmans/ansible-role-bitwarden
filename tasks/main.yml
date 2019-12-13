@@ -24,7 +24,6 @@
 - name: Create bwdata folder
   file: path=/tmp/bwdata state=directory
 - name: Extract docker-stub.zip into bwdata/docker-stub/
-  become: yes
   unarchive:
     src: /tmp/docker-stub.zip
     dest: /tmp/bwdata
@@ -82,8 +81,16 @@
 # Step 5
 # https://docs.ansible.com/ansible/latest/modules/win_certificate_store_module.html
 # Generate a .pfx certificate file for the identity container and place it in the mapped volume directory at ./identity/identity.pfx.
-# Nog bekijken
 
+- name: Generate idenity.key and identity.crt
+  command: openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout /tmp/bwdata/identity/identity.key -out /tmp/bwdata/identity/identity.crt -subj "/CN=Bitwarden IdentityServer" -days 10950
+- name: Gen
+  command: openssl pkcs12 -export -out /tmp/bwdata/identity/identity.pfx -inkey /tmp/bwdata/identity/identity.key -in /tmp/bwdata/identity/identity.crt -certfile /tmp/bwdata/identity/identity.crt -passout pass:"{{ identitypassword }}"
+- name: Safe identity_cert_password
+  lineinfile: 
+    path: /tmp/bwdata/env/global.override.env
+    regexp: 'globalSettings__identityServer__certificatePassword='
+    line: globalSettings__identityServer__certificatePassword={{ identitypassword }}
 
 # Step 6
 # https://docs.ansible.com/ansible/latest/modules/openssl_certificate_module.html

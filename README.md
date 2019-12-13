@@ -21,6 +21,7 @@ Role Variables
 | `bitwarden_installation_id`  | `[]`          | Unique bitwarden installation id (**required**)  |
 | `bitwarden_installation_key` | `[]`          | Bitwarden installation key (**required**)        |
 | `bitwarden_hostname`         | `[]`          | Hostname for the bitwarden server (**required**) |
+| `identitypassword`           | `[]`          | Password for identity server (**required**)      |
 
 Dependencies
 ------------
