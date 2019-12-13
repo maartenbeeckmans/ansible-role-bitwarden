@@ -24,9 +24,11 @@
 - name: Create bwdata folder
   file: path=/tmp/bwdata state=directory
 - name: Extract docker-stub.zip into bwdata/docker-stub/
+  become: yes
   unarchive:
     src: /tmp/docker-stub.zip
     dest: /tmp/bwdata
+    remote_src: yes
 
 # Step 3
 - name: Enter installation id in ./bwdata/env/global.override.env
@@ -82,16 +84,10 @@
 # Generate a .pfx certificate file for the identity container and place it in the mapped volume directory at ./identity/identity.pfx.
 # Nog bekijken
 
+
 # Step 6
 # https://docs.ansible.com/ansible/latest/modules/openssl_certificate_module.html
 # Copy your SSL certificate and keys to the ./ssl directory. By default, this directory is mapped to the nginx container at /etc/ssl. The ./nginx/default.conf can be adjusted to utilize these certificates as desired.
-- name: Generate a Let's Encrypt Certificate
-  openssl_certificate:
-    path: /etc/ssl/crt/ansible.com.crt
-    csr_path: /etc/ssl/csr/ansible.com.csr
-    provider: acme
-    acme_accountkey_path: /etc/ssl/private/ansible.com.pem
-    acme_challenge_path: /etc/ssl/challenges/ansible.com/
 
 # Step 7
 
