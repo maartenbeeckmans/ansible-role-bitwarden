@@ -96,6 +96,11 @@
 # https://docs.ansible.com/ansible/latest/modules/openssl_certificate_module.html
 # Copy your SSL certificate and keys to the ./ssl directory. By default, this directory is mapped to the nginx container at /etc/ssl. The ./nginx/default.conf can be adjusted to utilize these certificates as desired.
 
+- name: Creates directory for certificate
+  file: path=/tmp/bwdata/ssl/{{ bitwarden_hostname }} state=directory
+- name: Generate self signed certificate
+  command: openssl req -x509 -newkey rsa:4096 -sha256 -nodes -days 365 -keyout ./ssl/{{ bitwarden_hostname }/private.key -out ./ssl/{{ bitwarden_hostname }}/certificate.crt -reqexts SAN -extensions SAN -config <(cat /usr/lib/ssl/openssl.cnf <(printf '[SAN]\nsubjectAltName=DNS:{{ bitwarden_hostname }}\nbasicConstraints=CA:true')) -subj "/C=US/ST=New York/L=New York/O=Company Name/OU=Bitwarden/CN={{ bitwarden_hostname }}"
+
 # Step 7
 
 # Step 8
