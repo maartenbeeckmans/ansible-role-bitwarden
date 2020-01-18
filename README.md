@@ -45,10 +45,23 @@ Example Playbook
 Minimal required playbook:
 
 ```yml
-  - hosts: servers
-    roles:
-        - { role: username.rolename, x: 42 }
+  bitwarden_installation_id: yourinstallationid
+  bitwarden_installation_key: yourinstallationkey
+  bitwarden_hostname: bitwarden.example.com
+  bitwarden_identitypassword: identitypassword # random
+  bitwarden_sql_connectionstring: sqlpassword # random
+  bitwarden_identityKey: identitykey # random
+  bitwarden_duo_akey: duoAkey # random
+  bitwarden_mail: bitwarden@example.com
+  bitwarden_smtp_host: mail.example.com
+  bitwarden_smtp_port: 587
+  bitwarden_smtp_ssl: false
+  bitwarden_smtp_username: bitwarden
+  bitwarden_smtp_password: securePassword
+  bitwarden_UID: 1000
+  bitwarden_GID: 1000
 ```
+
 License
 -------
 
