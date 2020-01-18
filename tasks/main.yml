@@ -11,11 +11,11 @@
   pip:
     name: pip
     state: latest
-- name: install python docker and docker-compose with pip
-  pip:
-    name: 
-      - docker
-      - docker-compose
+# - name: install python docker and docker-compose with pip
+#   pip:
+#     name: 
+#       - docker
+#       - docker-compose
 - name: Start docker service
   service:
     name: docker
@@ -196,8 +196,10 @@
 # Step 12
 # # https://docs.ansible.com/ansible/latest/modules/docker_compose_module.html
 # docker-compose 'file' ./docker/docker-compose.yml up -d
-- name: Start bitwarden installation
-  docker_compose:
-    project_src: /tmp/bwdata/docker/docker-compose.yml
-    build: no
-  register: output
+# - name: Start bitwarden installation
+#   docker_compose:
+#     project_src: /tmp/bwdata/docker/docker-compose.yml
+#     build: no
+#   register: output
+- name: Start docker containers
+  command: docker-compose -f /tmp/bwdata/docker/docker-compose.yml up -d
