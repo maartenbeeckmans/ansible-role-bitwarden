@@ -130,6 +130,11 @@
     src: "{{ bitwarden_ssl_certificate_file }}"
     dest: "{{ bitwarden_cert_dir }}/{{ bitwarden_ssl_certificate_file }}"
 
+- name: Copy ca certificate file
+  copy:
+    src: "{{ bitwarden_ssl_certificate_file }}"
+    dest: "{{ bitwarden_cert_dir }}/{{ bitwarden_ssl_certificate_file }}"
+
 # # Step 7
 - name: Set Hostname
   replace:
