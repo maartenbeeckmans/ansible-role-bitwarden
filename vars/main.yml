@@ -4,3 +4,7 @@ bitwarden_http_port: 80
 bitwarden_https_port: 433
 bitwarden_smtp_port: 587
 bitwarden_smtp_ssl: false
+bitwarden_ssl_certificate_key_file: private.key
+bitwarden_ssl_certificate_file: certificate.crt
+bitwarden_key_dir: /root/bwdata/ssl/{{ bitwarden_hostname }}
+bitwarden_cert_dir: /root/bwdata/ssl/{{ bitwarden_hostname }}
