@@ -2,3 +2,5 @@
 # vars file for ansible-role-bitwarden
 bitwarden_http_port: 80
 bitwarden_https_port: 433
+bitwarden_smtp_port: 587
+bitwarden_smtp_ssl: false
