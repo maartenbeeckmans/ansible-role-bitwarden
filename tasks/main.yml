@@ -1,3 +1,8 @@
+- name: Ensure specified external repositories are installed
+  package:
+    name: epel-release
+    state: installed
+
 # tasks file for ansible-role-bitwarden
 - name: install the latest version of docker, docker-compose and unzip
   package:
@@ -6,6 +11,8 @@
       - docker-compose
       - unzip
       - python-pip
+      - mod_ssl
+      - openssl
     state: latest
 - name: upgrade version of pip to latest
   pip:
@@ -26,64 +33,64 @@
 - name: Download docker compose file
   get_url:
     url: https://github.com/bitwarden/server/releases/download/v1.32.0/docker-stub.zip
-    dest: /tmp/docker-stub.zip
+    dest: /root/docker-stub.zip
     mode: 0777
 
 # Step 2
 - name: Create bwdata folder
-  file: path=/tmp/bwdata state=directory
+  file: path=/root/bwdata state=directory
 - name: Extract docker-stub.zip into bwdata/docker-stub/
   unarchive:
-    src: /tmp/docker-stub.zip
-    dest: /tmp/bwdata
+    src: /root/docker-stub.zip
+    dest: /root/bwdata
     remote_src: yes
 
 # Step 3
 - name: Enter installation id in ./bwdata/env/global.override.env
   lineinfile:
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__installation__id'
     line: globalSettings__installation__id={{ bitwarden_installation_id }}
 - name: Enter installation key in ./bwdata/env/global.override.env
   lineinfile:
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__installation__key'
     line: globalSettings__installation__key={{ bitwarden_installation_key }}
 
 # Step 4
 - name: Replace vault service url in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__baseServiceUri__vault='
     line: globalSettings__baseServiceUri__vault=https://{{ bitwarden_hostname }}/
 
 - name: Replace api service url in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__baseServiceUri__api='
     line: globalSettings__baseServiceUri__api=https://{{ bitwarden_hostname }}/api
 
 - name: Replace identity service url in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__baseServiceUri__identity='
     line: globalSettings__baseServiceUri__identity=https://{{ bitwarden_hostname }}/identity
 
 - name: Replace admin service url in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__baseServiceUri__admin='
     line: globalSettings__baseServiceUri__admin=https://{{ bitwarden_hostname }}/admin
 
 - name: Replace notifications service url in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__baseServiceUri__notifications='
     line: globalSettings__baseServiceUri__notifications=https://{{ bitwarden_hostname }}/notifications
 
 - name: Replace attachment base url in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__attachment__baseUrl='
     line: globalSettings__attachment__baseUrl=https://{{ bitwarden_hostname }}/attachments
 
@@ -92,12 +99,12 @@
 # Generate a .pfx certificate file for the identity container and place it in the mapped volume directory at ./identity/identity.pfx.
 
 - name: Generate idenity.key and identity.crt
-  command: openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout /tmp/bwdata/identity/identity.key -out /tmp/bwdata/identity/identity.crt -subj '/CN=Bitwarden IdentityServer' -days 10950
+  command: openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout /root/bwdata/identity/identity.key -out /root/bwdata/identity/identity.crt -subj '/CN=Bitwarden IdentityServer' -days 10950
 - name: Gen
-  command: openssl pkcs12 -export -out /tmp/bwdata/identity/identity.pfx -inkey /tmp/bwdata/identity/identity.key -in /tmp/bwdata/identity/identity.crt -certfile /tmp/bwdata/identity/identity.crt -passout pass:'{{ bitwarden_identitypassword }}'
+  command: openssl pkcs12 -export -out /root/bwdata/identity/identity.pfx -inkey /root/bwdata/identity/identity.key -in /root/bwdata/identity/identity.crt -certfile /root/bwdata/identity/identity.crt -passout pass:'{{ bitwarden_identitypassword }}'
 - name: Replace identity_cert_password
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__identityServer__certificatePassword='
     line: globalSettings__identityServer__certificatePassword={{ bitwarden_identitypassword }}
 
@@ -107,80 +114,80 @@
 
 - name: Creates directory for certificate
   file: 
-    path: '/tmp/bwdata/ssl/{{ bitwarden_hostname }}' 
+    path: '/root/bwdata/ssl/{{ bitwarden_hostname }}' 
     state: directory
     owner: root
     group: root
     mode: 0777
 
 # - name: Generate self signed certificate
-#   command: openssl req -x509 -newkey rsa:4096 -sha256 -nodes -days 365 -keyout /tmp/bwdata/ssl/{{ bitwarden_hostname }/private.key -out /tmp/bwdata/ssl/{{ bitwarden_hostname }}/certificate.crt -reqexts SAN -extensions SAN -config <(cat /usr/lib/ssl/openssl.cnf <(printf [SAN]\nsubjectAltName=DNS:{{ bitwarden_hostname }}\nbasicConstraints=CA:true)) -subj /C=BE/ST=Flanders/L=Ghent/O=HoGent/OU=Bitwarden/CN={{ bitwarden_hostname }}
+#   command: openssl req -x509 -newkey rsa:4096 -sha256 -nodes -days 365 -keyout /root/bwdata/ssl/{{ bitwarden_hostname }/private.key -out /root/bwdata/ssl/{{ bitwarden_hostname }}/certificate.crt -reqexts SAN -extensions SAN -config <(cat /usr/lib/ssl/openssl.cnf <(printf [SAN]\nsubjectAltName=DNS:{{ bitwarden_hostname }}\nbasicConstraints=CA:true)) -subj /C=BE/ST=Flanders/L=Ghent/O=HoGent/OU=Bitwarden/CN={{ bitwarden_hostname }}
 
 # # Step 7
 - name: Set Hostname
   replace:
-    path: /tmp/bwdata/nginx/default.conf
+    path: /root/bwdata/nginx/default.conf
     regexp: 'bitwarden.example.com'
     replace: "{{ bitwarden_hostname }}"
 
 # Step 8
 - name: Replace sqlServer__Connectionstring
   replace:
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: RANDOM_DATABASE_PASSWORD
     replace: "{{ bitwarden_sql_connectionstring }}"
 - name: Replace internalIdentityKey
   replace:
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: RANDOM_IDENTITY_KEY
     replace: "{{ bitwarden_identityKey }}"
 - name: Replace duo__aKey
   replace:
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: RANDOM_DUO_AKEY
     replace: "{{ bitwarden_duo_akey }}"
 - name: Change sqlServer__Connectionstring
   lineinfile: 
-    path: /tmp/bwdata/env/mssql.override.env
+    path: /root/bwdata/env/mssql.override.env
     regexp: 'SA_PASSWORD='
     line: SA_PASSWORD={{ bitwarden_sql_connectionstring }}
 
 # Step 9
 - name: Setting Hostname
   replace:
-    path: /tmp/bwdata/web/app-id.json
+    path: /root/bwdata/web/app-id.json
     regexp: 'bitwarden.example.com'
     replace: "{{ bitwarden_hostname }}"
 
 # Step 10
 - name: Replace mail in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__mail__replyToEmail='
     line: globalSettings__mail__replyToEmail={{ bitwarden_mail }}
 - name: Replace snmp host in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__mail__smtp__host='
     line: globalSettings__mail__smtp__host={{ bitwarden_smtp_host }}
 - name: Replace snmp port in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__mail__smtp__port='
     line: globalSettings__mail__smtp__port={{ bitwarden_smtp_port }}
 - name: Replace snmp ssl in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__mail__smtp__ssl='
     line: globalSettings__mail__smtp__ssl={{ bitwarden_smtp_ssl }}
 - name: Replace snmp username in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__mail__smtp__username='
     line: globalSettings__mail__smtp__username={{ bitwarden_smtp_username }}
 - name: Replace snmp password in ./bwdata/env/global.override.env
   lineinfile: 
-    path: /tmp/bwdata/env/global.override.env
+    path: /root/bwdata/env/global.override.env
     regexp: 'globalSettings__mail__smtp__password='
     line: globalSettings__mail__smtp__password={{ bitwarden_smtp_password }}
 
@@ -188,7 +195,7 @@
 # # https://docs.ansible.com/ansible/latest/modules/user_module.html
 - name: Set User and Group ID
   blockinfile: 
-    path: /tmp/bwdata/env/uid.env
+    path: /root/bwdata/env/uid.env
     block: |
       LOCAL_UID={{ bitwarden_UID }}
       LOCAL_GID={{ bitwarden_GID }}
@@ -198,8 +205,8 @@
 # docker-compose 'file' ./docker/docker-compose.yml up -d
 # - name: Start bitwarden installation
 #   docker_compose:
-#     project_src: /tmp/bwdata/docker/docker-compose.yml
+#     project_src: /root/bwdata/docker/docker-compose.yml
 #     build: no
 #   register: output
-- name: Start docker containers
-  command: docker-compose -f /tmp/bwdata/docker/docker-compose.yml up -d
+# - name: Start docker containers
+#   command: docker-compose -f /root/bwdata/docker/docker-compose.yml up -d
