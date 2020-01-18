@@ -113,8 +113,15 @@
     group: root
     mode: 0777
 
-# - name: Generate self signed certificate
-#   command: openssl req -x509 -newkey rsa:4096 -sha256 -nodes -days 365 -keyout /tmp/bwdata/ssl/{{ bitwarden_hostname }/private.key -out /tmp/bwdata/ssl/{{ bitwarden_hostname }}/certificate.crt -reqexts SAN -extensions SAN -config <(cat /usr/lib/ssl/openssl.cnf <(printf [SAN]\nsubjectAltName=DNS:{{ bitwarden_hostname }}\nbasicConstraints=CA:true)) -subj /C=BE/ST=Flanders/L=Ghent/O=HoGent/OU=Bitwarden/CN={{ bitwarden_hostname }}
+- name: Copy user defined key file
+  copy:
+    src: "{{ bitwarden_ssl_certificate_key_file }}"
+    dest: "{{ bitwarden_key_dir }}/{{ bitwarden_ssl_certificate_key_file }}"
+
+- name: Copy custom certificate file
+  copy:
+    src: "{{ bitwarden_ssl_certificate_file }}"
+    dest: "{{ bitwarden_cert_dir }}/{{ bitwarden_ssl_certificate_file }}"
 
 # # Step 7
 - name: Set Hostname
@@ -201,5 +208,5 @@
 #     project_src: /tmp/bwdata/docker/docker-compose.yml
 #     build: no
 #   register: output
-- name: Start docker containers
-  command: docker-compose -f /tmp/bwdata/docker/docker-compose.yml up -d
+# - name: Start docker containers
+#   command: docker-compose -f /tmp/bwdata/docker/docker-compose.yml up -d
