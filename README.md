@@ -9,7 +9,7 @@ Requirements
 * Ports 80 (http) and 443 (https) should be open.
 * When you want to access Bitwarden from the outside world, their must be pointing a DNS record to your machine.
 * Bitwarden Installation ID and Installation key are required (can be obtained from [bitwarden.com/host](https://bitwarden.com/host))
-* Hostname is required, example: bitwarden.example.com or a ip address
+* Hostname is required, example: bitwarden.example.com or an ip address
 
 Role Variables
 --------------
@@ -37,7 +37,7 @@ Role Variables
 | `bitwarden_UID`                      | `[]`              | Desired user id for running bitwarden under (**required**)   |
 | `bitwarden_GID`                      | `[]`              | Desired group id for running bitwarden under (**required**)  |
 
-> `bitwarden_ssl_certificate_key_file`, `bitwarden_ssl_certificate_file` and `bitwarden_ssl_ca_certificate_file` must be self generated key files. See [here](https://wiki.centos.org/HowTos/Https) for more information. The file names must be `private.key` and `certificate.crt` and must be placed in de folder `ansible/files/`
+> `bitwarden_ssl_certificate_key_file`, `bitwarden_ssl_certificate_file` and `bitwarden_ssl_ca_certificate_file` must be self generated key files. See [here](https://wiki.centos.org/HowTos/Https) for more information. The file names must be `private.key`, `ca.crt` `certificate.crt` and must be placed in de folder `ansible/files/`
 
 Dependencies
 ------------
