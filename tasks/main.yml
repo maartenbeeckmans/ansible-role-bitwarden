@@ -216,6 +216,6 @@
       LOCAL_GID={{ bitwarden_GID }}
 
 # Step 12
-Start your Bitwarden installation and access it at your configured hostname
+# Start your Bitwarden installation and access it at your configured hostname
 - name: Start docker containers
   command: docker-compose -f /root/bwdata/docker/docker-compose.yml up -d
