@@ -1,9 +1,11 @@
+# Manual bitwarden installation with docker
+# See https://help.bitwarden.com/article/install-on-premise/#manual-docker-installations for more information
+
+# Prerequisites
 - name: Ensure specified external repositories are installed
   package:
     name: epel-release
     state: installed
-
-# tasks file for ansible-role-bitwarden
 - name: install the latest version of docker, docker-compose and unzip
   package:
     name:
@@ -18,11 +20,6 @@
   pip:
     name: pip
     state: latest
-# - name: install python docker and docker-compose with pip
-#   pip:
-#     name: 
-#       - docker
-#       - docker-compose
 - name: Start docker service
   service:
     name: docker
@@ -30,6 +27,7 @@
     enabled: yes
 
 # Step 1
+# Download a stubbed version of Bitwarden’s dependencies (docker-stub.zip) from the releases pages on GitHub.
 - name: Download docker compose file
   get_url:
     url: https://github.com/bitwarden/server/releases/download/v1.32.0/docker-stub.zip
@@ -37,6 +35,7 @@
     mode: 0777
 
 # Step 2
+# Create a new directory named bwdata and extract the docker-stub.zip archive to it. The directory structure provided matches what the ./docker/docker-compose.yml file’s mapped volumes expect, however, you are free to change the location of these mappings on the host machine if desired.
 - name: Create bwdata folder
   file: path=/root/bwdata state=directory
 - name: Extract docker-stub.zip into bwdata/docker-stub/
@@ -46,6 +45,7 @@
     remote_src: yes
 
 # Step 3
+# Get your installation__id and installation__key from https://bitwarden.com/host and provide them to the application’s environment variables at ./env/global.override.env
 - name: Enter installation id in ./bwdata/env/global.override.env
   lineinfile:
     path: /root/bwdata/env/global.override.env
@@ -58,6 +58,7 @@
     line: globalSettings__installation__key={{ bitwarden_installation_key }}
 
 # Step 4
+# Update the baseServiceUri__* and attachment__baseUrl application environment variables for your hostname at ./env/global.override.env
 - name: Replace vault service url in ./bwdata/env/global.override.env
   lineinfile: 
     path: /root/bwdata/env/global.override.env
@@ -95,7 +96,6 @@
     line: globalSettings__attachment__baseUrl=https://{{ bitwarden_hostname }}/attachments
 
 # Step 5
-# https://docs.ansible.com/ansible/latest/modules/win_certificate_store_module.html
 # Generate a .pfx certificate file for the identity container and place it in the mapped volume directory at ./identity/identity.pfx.
 
 - name: Generate idenity.key and identity.crt
@@ -109,7 +109,6 @@
     line: globalSettings__identityServer__certificatePassword={{ bitwarden_identitypassword }}
 
 # Step 6
-# https://docs.ansible.com/ansible/latest/modules/openssl_certificate_module.html
 # Copy your SSL certificate and keys to the ./ssl directory. By default, this directory is mapped to the nginx container at /etc/ssl. The ./nginx/default.conf can be adjusted to utilize these certificates as desired.
 
 - name: Creates directory for certificate
@@ -135,7 +134,8 @@
     src: "{{ bitwarden_ssl_certificate_file }}"
     dest: "{{ bitwarden_cert_dir }}/{{ bitwarden_ssl_ca_certificate_file }}"
 
-# # Step 7
+# Step 7
+# Update the server_name, HTTPS redirects, and Content-Security-Policy header with your hostname at ./nginx/default.conf
 - name: Set Hostname
   replace:
     path: /root/bwdata/nginx/default.conf
@@ -143,6 +143,7 @@
     replace: "{{ bitwarden_hostname }}"
 
 # Step 8
+# Generate your own random password strings for the sqlServer__connectionString RANDOM_DATABASE_PASSWORD, internalIdentityKey RANDOM_IDENTITY_KEY, and duo__aKey RANDOM_DUO_AKEY and update the variables at ./env/global.override.env. Also be sure to apply the same RANDOM_DATABASE_PASSWORD at ./env/mssql.override.env
 - name: Replace sqlServer__Connectionstring
   replace:
     path: /root/bwdata/env/global.override.env
@@ -165,6 +166,7 @@
     line: SA_PASSWORD={{ bitwarden_sql_connectionstring }}
 
 # Step 9
+# Update the app-id.json file at ./web/app-id.json to include your hostname’s URL (ex. https://bitwarden.example.com)
 - name: Setting Hostname
   replace:
     path: /root/bwdata/web/app-id.json
@@ -172,6 +174,7 @@
     replace: "{{ bitwarden_hostname }}"
 
 # Step 10
+# Configure your SMTP mail server and any other desired application settings at ./env/global.override.env
 - name: Replace mail in ./bwdata/env/global.override.env
   lineinfile: 
     path: /root/bwdata/env/global.override.env
@@ -204,7 +207,7 @@
     line: globalSettings__mail__smtp__password={{ bitwarden_smtp_password }}
 
 # Step 11
-# # https://docs.ansible.com/ansible/latest/modules/user_module.html
+# Map the desired user and group id for the Bitwarden containers to run under at ./env/uid.env
 - name: Set User and Group ID
   blockinfile: 
     path: /root/bwdata/env/uid.env
@@ -213,12 +216,6 @@
       LOCAL_GID={{ bitwarden_GID }}
 
 # Step 12
-# # https://docs.ansible.com/ansible/latest/modules/docker_compose_module.html
-# docker-compose 'file' ./docker/docker-compose.yml up -d
-# - name: Start bitwarden installation
-#   docker_compose:
-#     project_src: /root/bwdata/docker/docker-compose.yml
-#     build: no
-#   register: output
-# - name: Start docker containers
-#   command: docker-compose -f /root/bwdata/docker/docker-compose.yml up -d
+Start your Bitwarden installation and access it at your configured hostname
+- name: Start docker containers
+  command: docker-compose -f /root/bwdata/docker/docker-compose.yml up -d
